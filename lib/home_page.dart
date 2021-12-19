@@ -14,11 +14,21 @@ class _HomePageState extends State<HomePage> {
     const Color(0xFF252525),
     const Color(0xFF252525)
   ];
+  List<String> results = [];
 
   int operator = -1;
 
+  TextEditingController firstNumberCntr = TextEditingController(),
+      secondNumberCntr = TextEditingController();
+
+  TextStyle resultsTextStyle = const TextStyle(
+      color: Colors.white, fontSize: 17, decoration: TextDecoration.underline);
+
+  late Size size;
+
   @override
   Widget build(BuildContext context) {
+    size = MediaQuery.of(context).size;
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.black,
@@ -40,21 +50,38 @@ class _HomePageState extends State<HomePage> {
                   borderRadius: BorderRadius.circular(40),
                 ),
                 child: Container(
-                  width: double.infinity,
+                  width: 450,
                   height: 200,
                   decoration: BoxDecoration(
                     color: const Color(0xFF222222),
                     borderRadius: BorderRadius.circular(40),
                   ),
-                  child: const Center(
-                    child: Text(
-                      'No action has been selected yet.',
-                      textAlign: TextAlign.start,
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 17,
-                          decoration: TextDecoration.underline),
-                    ),
+                  child: Center(
+                    child: results.isEmpty
+                        ? Text(
+                            'No action has been selected yet.',
+                            textAlign: TextAlign.start,
+                            style: resultsTextStyle,
+                          )
+                        : Padding(
+                            padding: const EdgeInsets.only(left: 198),
+                            child: Column(
+                              children: [
+                                ListView.builder(
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: results.length,
+                                  shrinkWrap: true,
+                                  itemBuilder: (context, index) => Padding(
+                                    padding: const EdgeInsets.only(top: 10),
+                                    child: Text(
+                                      results[index],
+                                      style: resultsTextStyle,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                   ),
                 ),
               ),
@@ -65,6 +92,7 @@ class _HomePageState extends State<HomePage> {
             Padding(
               padding: const EdgeInsets.only(top: 8, left: 10, right: 10),
               child: TextFormField(
+                controller: firstNumberCntr,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                     hintText: 'Enter...',
@@ -87,6 +115,7 @@ class _HomePageState extends State<HomePage> {
             Padding(
               padding: const EdgeInsets.only(top: 8, left: 10, right: 10),
               child: TextFormField(
+                controller: secondNumberCntr,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                     hintText: 'Enter...',
@@ -361,33 +390,39 @@ class _HomePageState extends State<HomePage> {
               mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                Container(
-                  width: 170,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF222222),
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  child: const Center(
-                    child: Text(
-                      'Clear',
-                      style: TextStyle(color: Colors.white, fontSize: 15),
+                GestureDetector(
+                  child: Container(
+                    width: 170,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF222222),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'Clear',
+                        style: TextStyle(color: Colors.white, fontSize: 15),
+                      ),
                     ),
                   ),
+                  onTap: () => clear(),
                 ),
-                Container(
-                  width: 170,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF222222),
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  child: const Center(
-                    child: Text(
-                      'Calculate',
-                      style: TextStyle(color: Colors.white, fontSize: 15),
+                GestureDetector(
+                  child: Container(
+                    width: 170,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF222222),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'Calculate',
+                        style: TextStyle(color: Colors.white, fontSize: 15),
+                      ),
                     ),
                   ),
+                  onTap: () => calculate(),
                 ),
               ],
             ),
@@ -409,6 +444,55 @@ class _HomePageState extends State<HomePage> {
       if (i != index) {
         operatorsColors[i] = const Color(0xFF252525);
       }
+    }
+  }
+
+  clear() {
+    operatorsColors = [
+      const Color(0xFF252525),
+      const Color(0xFF252525),
+      const Color(0xFF252525),
+      const Color(0xFF252525)
+    ];
+    results.clear();
+    operator = -1;
+    firstNumberCntr.text = "";
+    setState(() {
+      secondNumberCntr.text = "";
+    });
+  }
+
+  calculate() {
+    String firstNumberStr = firstNumberCntr.text;
+    String secondNumberStr = secondNumberCntr.text;
+    if (firstNumberStr.isNotEmpty && secondNumberStr.isNotEmpty) {
+      double firstNumber = double.parse(firstNumberStr);
+      double secondNumber = double.parse(secondNumberStr);
+      double result;
+
+      switch (operator) {
+        case 0:
+          result = firstNumber + secondNumber;
+          break;
+        case 1:
+          result = firstNumber - secondNumber;
+          break;
+        case 2:
+          result = firstNumber * secondNumber;
+          break;
+        case 3:
+          result = firstNumber / secondNumber;
+          break;
+        default:
+          return;
+      }
+
+      if (results.length == 5) {
+        results.removeAt(0);
+      }
+      setState(() {
+        results.add(result.toStringAsFixed(2));
+      });
     }
   }
 }
